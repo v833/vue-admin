@@ -19,10 +19,17 @@
           <label for="">用户名</label>
           <el-input type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
         </el-form-item>
+
         <el-form-item prop="password" class="item-form">
           <label for="">密码</label>
           <el-input type="password" v-model="ruleForm.password" autocomplete="off" minlength="6" maxlength="20"></el-input>
         </el-form-item>
+
+        <el-form-item prop="passwords" class="item-form" v-if="menuTab[1].current">
+          <label for="">重复密码</label>
+          <el-input type="password" v-model="ruleForm.passwords" autocomplete="off" minlength="6" maxlength="20"></el-input>
+        </el-form-item>
+
         <el-form-item prop="code">
           <label for="">验证码</label>
           <el-row :gutter="11">
@@ -43,37 +50,50 @@
 </template>
 
 <script>
+import { stripscript, validateEmail, validatePass, validateVCode } from '@/utils/validate.js'
 export default {
   name: 'login',
   data() {
     var validateCode = (rule, value, callback) => {
-      let reg = /^[a-z0-9]{6}$/
       if (value === '') {
         callback(new Error('请输入验证码'));
-      } else if (!reg.test(value)) {
+      } else if (!validateVCode(value)) {
         callback(new Error('验证码格式错误'));
       } else {
         callback()
       }
     };
     var validateUsername = (rule, value, callback) => {
-      let reg = /^([a-zA-Z0-9]+[_|_|\-|.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/
       if (value === '') {
         callback(new Error('请输入用户名'));
-      } else if (!reg.test(value)) {
+      } else if (!validateEmail(value)) {
         callback(new Error('用户名格式错误'));
       } else {
         callback()
       }
     };
     var validatePassword = (rule, value, callback) => {
-      let reg = /^(\w){6,20}$/;
+      // 过滤特殊字符
+      value = this.ruleForm.password = stripscript(value)
+      let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
       if (value === '') {
         callback(new Error('请输入密码'));
-      } else if (!reg.test(value)) {
+      } else if (!validatePass(value)) {
         callback(new Error('密码格式错误'));
       } else {
         callback();
+      }
+    };
+    var validatePasswords = (rule, value, callback) => {
+      // 过滤特殊字符
+      value = this.ruleForm.passwords = stripscript(value)
+      let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
+      if (value === '') {
+        callback(new Error('请再次输入密码'));
+      }else if (value !== this.ruleForm.password) {
+        callback(new Error('两次密码输入不一致'))
+      } else {
+        callback()
       }
     };
     return {
@@ -84,6 +104,7 @@ export default {
       ruleForm: {
         username: '',
         password: '',
+        passwords: '',
         code: ''
       },
       rules: {
@@ -92,6 +113,9 @@ export default {
         ],
         password: [
           { validator: validatePassword, trigger: 'blur' }
+        ],
+        passwords: [
+          { validator: validatePasswords, trigger: 'blur' }
         ],
         code: [
           { validator: validateCode, trigger: 'blur' }
