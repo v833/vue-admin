@@ -51,10 +51,11 @@
 
 <script>
 import { stripscript, validateEmail, validatePass, validateVCode } from '@/utils/validate.js'
+import { reactive, ref, isRef, toRefs, onMounted } from '@vue/composition-api'
 export default {
   name: 'login',
-  data() {
-    var validateCode = (rule, value, callback) => {
+  setup(props, { refs }) {
+    let validateCode = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入验证码'));
       } else if (!validateVCode(value)) {
@@ -63,7 +64,7 @@ export default {
         callback()
       }
     };
-    var validateUsername = (rule, value, callback) => {
+    let validateUsername = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入用户名'));
       } else if (!validateEmail(value)) {
@@ -72,10 +73,9 @@ export default {
         callback()
       }
     };
-    var validatePassword = (rule, value, callback) => {
+    let validatePassword = (rule, value, callback) => {
       // 过滤特殊字符
-      value = this.ruleForm.password = stripscript(value)
-      let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
+      value = ruleForm.password = stripscript(value)
       if (value === '') {
         callback(new Error('请输入密码'));
       } else if (!validatePass(value)) {
@@ -84,62 +84,65 @@ export default {
         callback();
       }
     };
-    var validatePasswords = (rule, value, callback) => {
+    let validatePasswords = (rule, value, callback) => {
       // 过滤特殊字符
-      value = this.ruleForm.passwords = stripscript(value)
-      let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
+      value = ruleForm.passwords = stripscript(value)
       if (value === '') {
         callback(new Error('请再次输入密码'));
-      }else if (value !== this.ruleForm.password) {
+      }else if (value !== ruleForm.password) {
         callback(new Error('两次密码输入不一致'))
       } else {
         callback()
       }
     };
-    return {
-      menuTab: [
-        {txt: '登录', current: true},
-        {txt: '注册', current: false}
+    // 这里放置data数据，生命周期，自定义的函数
+    const menuTab = reactive([
+      {txt: '登录', current: true},
+      {txt: '注册', current: false}
+    ])
+    const ruleForm = reactive({
+      username: '',
+      password: '',
+      passwords: '',
+      code: ''
+    })
+    const rules = reactive({
+      username: [
+        { validator: validateUsername, trigger: 'blur' }
       ],
-      ruleForm: {
-        username: '',
-        password: '',
-        passwords: '',
-        code: ''
-      },
-      rules: {
-        username: [
-          { validator: validateUsername, trigger: 'blur' }
-        ],
-        password: [
-          { validator: validatePassword, trigger: 'blur' }
-        ],
-        passwords: [
-          { validator: validatePasswords, trigger: 'blur' }
-        ],
-        code: [
-          { validator: validateCode, trigger: 'blur' }
-        ]
-      }
+      password: [
+        { validator: validatePassword, trigger: 'blur' }
+      ],
+      passwords: [
+        { validator: validatePasswords, trigger: 'blur' }
+      ],
+      code: [
+        { validator: validateCode, trigger: 'blur' }
+      ]
+    }) 
+    const toggleMenu = ((data) => {
+      menuTab.forEach(item => item.current = false)
+      data.current = true
+    })
+    const submitForm = ((formName) => {
+      refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!')
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    })
+    return {
+      menuTab,
+      ruleForm,
+      toggleMenu,
+      submitForm,
+      rules
     }
   },
-  methods: {
-    toggleMenu(data) {
-      this.menuTab.forEach(item => item.current = false)
-      data.current = true
-    },
-    submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            alert('submit!');
-          } else {
-            console.log('error submit!!');
-            return false;
-          }
-        });
-      },
-    }
-  }
+}
 </script>
 
 <style lang="scss" scoped>
