@@ -53,6 +53,7 @@
 </template>
 
 <script>
+import sha1 from 'js-sha1'
 import { getSms, postRegister, postLogin } from '@/api/login.js'
 import { stripscript, validateEmail, validatePass, validateVCode } from '@/utils/validate.js'
 import { reactive, ref, isRef, toRefs, onMounted } from '@vue/composition-api'
@@ -185,7 +186,8 @@ export default {
         // 注册
         let data = {
           username: ruleForm.username,
-          password: ruleForm.password,
+          // sha1 加密
+          password: sha1(ruleForm.password),
           code: ruleForm.code
         }
         if (valid && menuTab[1].current) {
@@ -208,7 +210,7 @@ export default {
       })
     })
     // 登录按钮状态
-    const loginButtonState = ref(false)
+    const loginButtonState = ref(true)
     const codeButtonState = reactive({
       status: false,
       text: '获取验证码'
