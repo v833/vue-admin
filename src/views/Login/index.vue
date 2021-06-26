@@ -37,9 +37,9 @@
               <el-input id="code" v-model="ruleForm.code" minlangth="6" maxlength="6"></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" class="block" @click="handleGetSms()">
-                获取验证码
-                <span v-if="true"></span>
+              <el-button type="success" class="block" @click="handleGetSms()" :disabled="codeButtonState.status">
+                {{ codeButtonState.text }}
+                <!-- <span v-if="true"></span> -->
                 </el-button>
             </el-col>
           </el-row>
@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { getSms } from '@/api/login.js'
+import { getSms, postRegister, postLogin } from '@/api/login.js'
 import { stripscript, validateEmail, validatePass, validateVCode } from '@/utils/validate.js'
 import { reactive, ref, isRef, toRefs, onMounted } from '@vue/composition-api'
 export default {
@@ -63,7 +63,7 @@ export default {
       
     })
     // 获取验证码
-    const handleGetSms = (async () => {
+    const handleGetSms = (async() => {
       if (ruleForm.username === '') {
         root.$message.error('用户名不能为空')
         return
@@ -72,13 +72,40 @@ export default {
         root.$message.error('用户名格式错误，请重新输入')
         return
       }
-      // refs.loginButtonState = false
+      codeButtonState.status = true
+      codeButtonState.text = '发送中'
       let requestData = {
         username: ruleForm.username,
-        module:"login"
+        module: menuTab[0].current ? 'login' : 'register'
       }
-      let data = await getSms(requestData)
-      root.$message.success(data.message)
+      try {
+        let data = await getSms(requestData)
+        root.$message.success(data.message)
+      } catch (e) {}
+      loginButtonState.value = false
+      // 调用定时器，倒计时60s
+      countDown(60)
+    })
+    // 倒计时
+    const countDown = ((value) => {
+      let time = value
+      // 判断是否有定时器，如果有则清除
+      if (timer.value) clearInterval(timer.value)
+      timer.value = setInterval (() => {
+        codeButtonState.text = --time
+        if (time === 0) {
+          clearInterval(timer.value)
+          codeButtonState.text = '再次获取'
+          loginButtonState.value = true
+          codeButtonState.status = false
+        }
+      }, 1000)
+    })
+    // 清除倒计时
+    const clearCountDown = (() => {
+      codeButtonState.status = false,
+      codeButtonState.text = '获取验证码'
+      clearInterval(timer.value)
     })
     let validateCode = (rule, value, callback) => {
       if (value === '') {
@@ -148,19 +175,45 @@ export default {
     const toggleMenu = ((data) => {
       menuTab.forEach(item => item.current = false)
       data.current = true
+      // ruleForm = root.$options.refs.ruleForm
+      // 重置表单
+      refs['ruleForm'].resetFields()
     })
+
     const submitForm = ((formName) => {
       refs[formName].validate((valid) => {
-        if (valid) {
-          alert('submit!')
-        } else {
-          console.log('error submit!!')
+        // 注册
+        let data = {
+          username: ruleForm.username,
+          password: ruleForm.password,
+          code: ruleForm.code
+        }
+        if (valid && menuTab[1].current) {
+          postRegister(data)
+          .then((responce) => {
+            root.$message.success(responce.message)
+            // 模拟注册成功
+            toggleMenu(menuTab[0])
+            clearCountDown()
+          })
+        } else if (valid && menuTab[0].current) {
+            postLogin (data)
+            .then(response => {
+              root.$message.success(response.message)
+            })
+          } else {
+          root.$message.error('error submit')
           return false
         }
       })
     })
     // 登录按钮状态
-    const loginButtonState = ref(true)
+    const loginButtonState = ref(false)
+    const codeButtonState = reactive({
+      status: false,
+      text: '获取验证码'
+    })
+    const timer = ref(null)
     return {
       menuTab,
       ruleForm,
@@ -168,7 +221,9 @@ export default {
       submitForm,
       rules,
       handleGetSms,
-      loginButtonState
+      loginButtonState,
+      codeButtonState,
+      timer
     }
   },
 }
@@ -183,7 +238,7 @@ export default {
       margin: auto;
       overflow: hidden;
       .menu-tab {
-        margin-top: 100px;
+        margin-top: 50px;
         text-align: center;
         li {
           display: inline-block;
