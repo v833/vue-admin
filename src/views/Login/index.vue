@@ -37,7 +37,7 @@
               <el-input v-model="ruleForm.code" minlangth="6" maxlength="6"></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" class="block">获取验证码</el-button>
+              <el-button type="success" class="block" @click="handleGetSms()">获取验证码</el-button>
             </el-col>
           </el-row>
         </el-form-item>
@@ -50,11 +50,18 @@
 </template>
 
 <script>
+import { getSms } from '@/api/login.js'
 import { stripscript, validateEmail, validatePass, validateVCode } from '@/utils/validate.js'
 import { reactive, ref, isRef, toRefs, onMounted } from '@vue/composition-api'
 export default {
   name: 'login',
   setup(props, { refs }) {
+    onMounted(() => {
+
+    })
+    const handleGetSms = (() => {
+      getSms({ username: ruleForm.username })
+    })
     let validateCode = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入验证码'));
@@ -134,12 +141,15 @@ export default {
         }
       })
     })
+
+
     return {
       menuTab,
       ruleForm,
       toggleMenu,
       submitForm,
-      rules
+      rules,
+      handleGetSms
     }
   },
 }
@@ -152,8 +162,9 @@ export default {
     .login-wrap {
       width: 330px;
       margin: auto;
-      padding: 100px;
+      overflow: hidden;
       .menu-tab {
+        margin-top: 100px;
         text-align: center;
         li {
           display: inline-block;
