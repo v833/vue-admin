@@ -16,33 +16,36 @@
                class="login-form"
                size="medium">
         <el-form-item prop="username" class="item-form">
-          <label for="">用户名</label>
-          <el-input type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
+          <label for="username">用户名</label>
+          <el-input id="username" type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
         </el-form-item>
 
         <el-form-item prop="password" class="item-form">
-          <label for="">密码</label>
-          <el-input type="password" v-model="ruleForm.password" autocomplete="off" minlength="6" maxlength="20"></el-input>
+          <label for="password">密码</label>
+          <el-input id="password" type="password" v-model="ruleForm.password" autocomplete="off" minlength="6" maxlength="20"></el-input>
         </el-form-item>
 
         <el-form-item prop="passwords" class="item-form" v-if="menuTab[1].current">
-          <label for="">重复密码</label>
-          <el-input type="password" v-model="ruleForm.passwords" autocomplete="off" minlength="6" maxlength="20"></el-input>
+          <label for="passwords">重复密码</label>
+          <el-input id="passwords" type="password" v-model="ruleForm.passwords" autocomplete="off" minlength="6" maxlength="20"></el-input>
         </el-form-item>
 
         <el-form-item prop="code">
-          <label for="">验证码</label>
+          <label for="code">验证码</label>
           <el-row :gutter="11">
             <el-col :span="15">
-              <el-input v-model="ruleForm.code" minlangth="6" maxlength="6"></el-input>
+              <el-input id="code" v-model="ruleForm.code" minlangth="6" maxlength="6"></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" class="block" @click="handleGetSms()">获取验证码</el-button>
+              <el-button type="success" class="block" @click="handleGetSms()">
+                获取验证码
+                <span v-if="true"></span>
+                </el-button>
             </el-col>
           </el-row>
         </el-form-item>
         <el-form-item>
-          <el-button type="danger" class="block" @click="submitForm('ruleForm')">提交</el-button>
+          <el-button type="danger" :disabled="loginButtonState" class="block" @click="submitForm('ruleForm')">{{menuTab[0].current ? '登录' : '注册'}}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -55,12 +58,27 @@ import { stripscript, validateEmail, validatePass, validateVCode } from '@/utils
 import { reactive, ref, isRef, toRefs, onMounted } from '@vue/composition-api'
 export default {
   name: 'login',
-  setup(props, { refs }) {
+  setup(props, { refs, root }) {
     onMounted(() => {
-
+      
     })
-    const handleGetSms = (() => {
-      getSms({ username: ruleForm.username })
+    // 获取验证码
+    const handleGetSms = (async () => {
+      if (ruleForm.username === '') {
+        root.$message.error('用户名不能为空')
+        return
+      }
+      if (!validateEmail(ruleForm.username)) {
+        root.$message.error('用户名格式错误，请重新输入')
+        return
+      }
+      // refs.loginButtonState = false
+      let requestData = {
+        username: ruleForm.username,
+        module:"login"
+      }
+      let data = await getSms(requestData)
+      root.$message.success(data.message)
     })
     let validateCode = (rule, value, callback) => {
       if (value === '') {
@@ -141,15 +159,16 @@ export default {
         }
       })
     })
-
-
+    // 登录按钮状态
+    const loginButtonState = ref(true)
     return {
       menuTab,
       ruleForm,
       toggleMenu,
       submitForm,
       rules,
-      handleGetSms
+      handleGetSms,
+      loginButtonState
     }
   },
 }
