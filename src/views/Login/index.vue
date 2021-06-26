@@ -102,7 +102,6 @@ export default {
       }, 1000)
     })
     // 清除倒计时
-    const one = 1
     const clearCountDown = (() => {
       codeButtonState.status = false,
       codeButtonState.text = '获取验证码'
