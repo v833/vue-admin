@@ -73,8 +73,10 @@ export default {
         root.$message.error('用户名格式错误，请重新输入')
         return
       }
-      codeButtonState.status = true
-      codeButtonState.text = '发送中'
+      updateButtonStatus({
+        status: true,
+        text: '发送中'
+      })
       let requestData = {
         username: ruleForm.username,
         module: menuTab[0].current ? 'login' : 'register'
@@ -96,16 +98,20 @@ export default {
         codeButtonState.text = --time
         if (time === 0) {
           clearInterval(timer.value)
-          codeButtonState.text = '再次获取'
+          updateButtonStatus({
+            status: true,
+            text: '再次获取'
+          })
           loginButtonState.value = true
-          codeButtonState.status = false
         }
       }, 1000)
     })
     // 清除倒计时
     const clearCountDown = (() => {
-      codeButtonState.status = false,
-      codeButtonState.text = '获取验证码'
+      updateButtonStatus({
+        status: false,
+        text: '获取验证码'
+      })
       clearInterval(timer.value)
     })
     let validateCode = (rule, value, callback) => {
@@ -172,15 +178,24 @@ export default {
       code: [
         { validator: validateCode, trigger: 'blur' }
       ]
-    }) 
+    })
+    // 切换模块
     const toggleMenu = ((data) => {
       menuTab.forEach(item => item.current = false)
       data.current = true
       // ruleForm = root.$options.refs.ruleForm
       // 重置表单
+      resetFormData()
+    })
+    // 清除表单数据
+    const resetFormData = (() => {
       refs['ruleForm'].resetFields()
     })
-
+    // 更新按钮状态
+    const updateButtonStatus = (params => {
+      codeButtonState.status = params.status,
+      codeButtonState.text = params.text
+    })
     const submitForm = ((formName) => {
       refs[formName].validate((valid) => {
         // 注册

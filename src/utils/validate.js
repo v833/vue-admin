@@ -1,5 +1,3 @@
-import { func } from "assert-plus";
-
 // 过滤特殊字符
 export function stripscript(s) {
   var pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）&—|{}【】‘；：”“'。，、？]")
