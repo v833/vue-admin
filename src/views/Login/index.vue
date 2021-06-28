@@ -217,6 +217,7 @@ export default {
             postLogin (data)
             .then(response => {
               root.$message.success(response.message)
+              root.$router.push('/console')
             })
           } else {
           root.$message.error('error submit')
