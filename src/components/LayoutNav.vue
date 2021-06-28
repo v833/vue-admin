@@ -8,8 +8,6 @@
     <el-menu
       default-active="1-4-1"
       class="el-menu-vertical-demo"
-      @open="handleOpen"
-      @close="handleClose"
       :collapse="isCollapse"
       background-color="transparent"
       text-color="#fff"
@@ -41,24 +39,20 @@
 </template>
 
 <script>
-import { reactive, ref } from "@vue/composition-api";
+import { reactive, ref, computed} from "@vue/composition-api";
 import SvgIcon from "./SvgIcon.vue";
 export default {
   components: { SvgIcon },
   name: "navMenu",
   setup(props, { root }) {
     // 数据
-    const isCollapse = ref(false);
     const routers = reactive(root.$router.options.routes);
+    const isCollapse = computed(() => root.$store.state.isCollapse)
 
     // 函数
-    const handleOpen = (key, keyPath) => {};
-    const handleClose = (key, keyPath) => {};
 
     return {
       isCollapse,
-      handleOpen,
-      handleClose,
       routers,
     };
   },

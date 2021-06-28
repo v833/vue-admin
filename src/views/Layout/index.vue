@@ -8,6 +8,7 @@
 </template>
 
 <script>
+import { computed } from '@vue/composition-api'
 import LayoutHeader from '../../components/LayoutHeader.vue'
 import LayoutMain from '../../components/LayoutMain.vue'
 import LayoutNav from '../../components/LayoutNav.vue'
@@ -20,9 +21,13 @@ export default {
     LayoutNav
   },
   setup(props, {root}) {
+    const menuStatus = computed(() => root.$store.state.isCollapse)
 
+    return {
+      menuStatus
+    }
   }
-  
+
 }
 </script>
 

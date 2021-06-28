@@ -1,6 +1,6 @@
 <template>
   <div id="header-wrap">
-    <div class="pull-left header-icon"><svg-icon iconClass="menu" className="menu"></svg-icon></div>
+    <div class="pull-left header-icon" @click="navMenuState"><svg-icon iconClass="menu" className="menu"></svg-icon></div>
     <div class="pull-right">
       <div class="user-info pull-left">
         管理员
@@ -16,6 +16,15 @@ export default {
   name: 'LayoutHeader',
   components: {
     SvgIcon
+  },
+  setup(props, { root }) {
+    const navMenuState = () => {
+      root.$store.commit('SET_COLLAPSE')
+    }
+
+    return {
+      navMenuState
+    }
   }
 }
 </script>
