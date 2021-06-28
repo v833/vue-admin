@@ -1,5 +1,14 @@
 // 后台框架尺寸
 // 菜单宽度
 $navMenu: 250px;
+$navMenuMin: 64px;
+$layoutHeader: 75px;
+
 // 主颜色
 $mainColor: #f56c6c;
+.pull-left {
+  float: left;
+}
+.pull-right {
+  float: right;
+}

@@ -1,5 +1,6 @@
 <template>
   <div id="nav-wrap">
+    <img src="@/assets/logo.png">
     <!-- <el-radio-group v-model="isCollapse" style="margin-bottom: 20px">
       <el-radio-button :label="false">展开</el-radio-button>
       <el-radio-button :label="true">收起</el-radio-button>
@@ -16,14 +17,11 @@
       router
     >
       <template v-for="(item, index) in routers">
-        <el-submenu
-          :index="item.path"
-          v-if="!item.hidden"
-          :key="index"
-        >
+        <el-submenu :index="item.path" v-if="!item.hidden" :key="index">
           <!-- 一级菜单 -->
           <template slot="title">
-            <i class="el-icon-location"></i>
+            <!-- <i :class="item.meta.icon"></i> -->
+            <svg-icon :iconClass="item.meta.icon" :className="item.meta.icon"/>
             <span slot="title">{{ item.meta.name }}</span>
           </template>
           <!-- 子级菜单 -->
@@ -44,7 +42,9 @@
 
 <script>
 import { reactive, ref } from "@vue/composition-api";
+import SvgIcon from "./SvgIcon.vue";
 export default {
+  components: { SvgIcon },
   name: "navMenu",
   setup(props, { root }) {
     // 数据
@@ -75,8 +75,12 @@ export default {
   background-color: #344a5f;
   .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: $navMenu;
-    min-height: 400px;
-    
+    // min-height: 400px;
+  }
+  img {
+    display: block;
+    width: 92px;
+    margin: 28px auto 25px;
   }
 }
 </style>

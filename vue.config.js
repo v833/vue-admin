@@ -10,6 +10,15 @@ module.exports = {
    * webpack配置,see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
    **/
   chainWebpack: (config) => {
+    const svgRule = config.module.rule("svg");
+    svgRule.uses.clear();
+    svgRule
+      .use("svg-sprite-loader")
+      .loader("svg-sprite-loader")
+      .options({
+        symbolId: "icon-[name]",
+        include: ["./src/icons"]
+      });
   },
   configureWebpack: (config) => {
     config.resolve = { // 配置解析别名
@@ -36,7 +45,7 @@ module.exports = {
     // css预设器配置项
     loaderOptions: {
       // 如发现 css.modules 报错，请查看这里：http://www.web-jshtml.cn/#/detailed?id=12
-      sass: { 
+      sass: {
         prependData: `@import "./src/styles/main.scss";`
       }
     },
@@ -71,8 +80,7 @@ module.exports = {
       warnings: true,
       errors: true
     },
-    before: app => {
-    }
+    before: app => {}
   },
   /**
    * 第三方插件配置

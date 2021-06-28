@@ -1,12 +1,22 @@
 <template>
   <div id="header-wrap">
-    LayoutHeader
+    <div class="pull-left header-icon"><svg-icon iconClass="menu" className="menu"></svg-icon></div>
+    <div class="pull-right">
+      <div class="user-info pull-left">
+        管理员
+      </div>
+      <div class="header-icon pull-right"><svg-icon iconClass="exit" className="exit"></svg-icon></div>
+    </div>
   </div>
 </template>
 
 <script>
+import SvgIcon from '../components/SvgIcon.vue'
 export default {
-  name: 'LayoutHeader'
+  name: 'LayoutHeader',
+  components: {
+    SvgIcon
+  }
 }
 </script>
 
@@ -19,5 +29,22 @@ export default {
     height: 75px;
     background-color: #fff;
     box-shadow: 0 3px 16px 0 rgba(0,0,0,.1);
+    line-height: 75px;
+    .user-info {
+      height: 100%;
+      padding: 0 32px;
+      border-right: 1px solid #ededed;
+      + .header-icon {
+        padding: 0 20px;
+      }
+    }
+    .header-icon {
+      padding: 0 32px;
+      svg {
+        margin-bottom: -8px;
+        font-size: 25px;
+        cursor: pointer;
+      }
+    }
   }
 </style>
