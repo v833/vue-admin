@@ -1,6 +1,6 @@
 <template>
   <div id="nav-wrap">
-    <img src="@/assets/logo.png">
+    <img src="@/assets/logo.png" />
     <!-- <el-radio-group v-model="isCollapse" style="margin-bottom: 20px">
       <el-radio-button :label="false">展开</el-radio-button>
       <el-radio-button :label="true">收起</el-radio-button>
@@ -19,7 +19,7 @@
           <!-- 一级菜单 -->
           <template slot="title">
             <!-- <i :class="item.meta.icon"></i> -->
-            <svg-icon :iconClass="item.meta.icon" :className="item.meta.icon"/>
+            <svg-icon :iconClass="item.meta.icon" :className="item.meta.icon" />
             <span slot="title">{{ item.meta.name }}</span>
           </template>
           <!-- 子级菜单 -->
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { reactive, ref, computed} from "@vue/composition-api";
+import { reactive, ref, computed } from "@vue/composition-api";
 import SvgIcon from "./SvgIcon.vue";
 export default {
   components: { SvgIcon },
@@ -47,7 +47,7 @@ export default {
   setup(props, { root }) {
     // 数据
     const routers = reactive(root.$router.options.routes);
-    const isCollapse = computed(() => root.$store.state.isCollapse)
+    const isCollapse = computed(() => root.$store.state.isCollapse);
 
     // 函数
 
@@ -67,6 +67,7 @@ export default {
   width: $navMenu;
   height: 100vh;
   background-color: #344a5f;
+  @include webkit(transition, all 0.3s ease 0s);
   .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: $navMenu;
     // min-height: 400px;
@@ -75,6 +76,26 @@ export default {
     display: block;
     width: 92px;
     margin: 28px auto 25px;
+  }
+}
+.open {
+  #nav-wrap {
+    width: $navMenu;
+  }
+}
+.close {
+  #nav-wrap {
+    width: $navMenuMin;
+    img {
+      width: 70%;
+    }
+    .el-submenu {
+      &.is-open {
+        > .el-submenu__title {
+          background-color: red;
+        }
+      }
+    }
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div id="layout">
+  <div id="layout" :class="menuStatus ? 'close' : 'open'">
     layout
     <layout-header/>
     <LayoutMain />
