@@ -1,6 +1,6 @@
 <template>
   <div>
-    console123
+    控制台
   </div>
 </template>
 

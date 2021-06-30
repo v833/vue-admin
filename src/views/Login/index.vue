@@ -254,7 +254,7 @@ export default {
         } else if (valid && menuTab[0].current) {
           root.$store.dispatch("login", data).then((response) => {
             root.$message.success(response.message);
-            root.$router.push("/console");
+            root.$router.push("/console")
           });
         } else {
           root.$message.error("error submit");

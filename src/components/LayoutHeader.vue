@@ -4,8 +4,8 @@
       <svg-icon iconClass="menu" className="menu"></svg-icon>
     </div>
     <div class="pull-right">
-      <div class="user-info pull-left">管理员</div>
-      <div class="header-icon pull-left">
+      <div class="user-info pull-left">{{username}}</div>
+      <div class="header-icon pull-left" @click="exit">
         <svg-icon iconClass="exit" className="exit"></svg-icon>
       </div>
     </div>
@@ -13,6 +13,7 @@
 </template>
 
 <script>
+import { computed, ref } from '@vue/composition-api'
 import SvgIcon from "../components/SvgIcon.vue";
 export default {
   name: "LayoutHeader",
@@ -20,12 +21,22 @@ export default {
     SvgIcon,
   },
   setup(props, { root }) {
+    const username = computed(() => root.$store.state.username)
     const navMenuState = () => {
       root.$store.commit("SET_COLLAPSE");
     };
+    const exit =  () => {
+       root.$store.dispatch('exit').then(() => {
+         root.$router.push({
+           name: 'login'
+         })
+       })
+    }
 
     return {
       navMenuState,
+      username,
+      exit
     };
   },
 };

@@ -1,13 +1,16 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-// import Cookie from 'cookie_js'
+// import cookie from 'cookie_js'
 import { postLogin } from '@/api/login.js'
+import { setToken, setUsername, getUsername, removeToken, removeUsername } from '../utils/app'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    isCollapse: JSON.parse(sessionStorage.getItem('isCollapse')) || false
+    isCollapse: JSON.parse(sessionStorage.getItem('isCollapse')) || false,
+    token: '',
+    username: getUsername() || '',
   },
   getters: {
 
@@ -18,6 +21,12 @@ export default new Vuex.Store({
       // Cookie.set('isCollapse', JSON.stringify(state.isCollapse))
       // html5 本地存储
       window.sessionStorage.setItem('isCollapse', JSON.stringify(state.isCollapse))
+    },
+    SET_TOKEN(state, value) {
+      state.token = value
+    },
+    SET_USERNAME(state, value) {
+      state.username = value
     }
   },
   actions: {
@@ -25,10 +34,24 @@ export default new Vuex.Store({
       return new Promise((resolve, reject) => {
         // 接口
         postLogin(data).then((response) =>{
+          let data = response.data
+          content.commit('SET_TOKEN', data.token)
+          content.commit('SET_USERNAME', data.username)
+          setToken(data.token)
+          setUsername(data.username)
           resolve(response)
         }).catch(error => {
           reject(error)
         })
+      })
+    },
+    exit(content) {
+      return new Promise((resolve) => {
+        removeToken();
+        removeUsername();
+        content.commit('SET_TOKEN', '')
+        content.commit('SET_USERNAME', '')
+        resolve()
       })
     }
   },
