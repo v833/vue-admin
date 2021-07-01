@@ -23,3 +23,20 @@ $mainColor: #f56c6c;
 .pull-right {
   float: right;
 }
+
+// 占位空间
+.black-space-30 {
+  height: 30px;
+}
+
+@mixin labelDom($align, $width, $line-height: "normal"){
+  label {
+    float: left;
+    width: $width + px;
+    text-align: $align;
+    line-height: $line-height + px;
+  }
+  .wrap-content {
+      margin-left: $width + px;
+  }
+}

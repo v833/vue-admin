@@ -39,3 +39,26 @@ li.el-submenu {
     background-color: $mainColor !important;
   }
 }
+// table 样式
+.el-table td,
+.el-table th {
+  text-align: center;
+}
+// dialog 样式
+.el-dialog__body {
+  padding: 30px 47px;
+}
+.el-dialog__footer {
+  text-align: center;
+  padding-bottom: 50px;
+  .el-button {
+    width: 150px;
+    margin: 0 11px;
+  }
+}
+// form 样式
+.el-form {
+  .el-form-item:last-child {
+    margin-bottom: 0;
+  }
+}

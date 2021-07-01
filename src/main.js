@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import './router/premit'
-
+import global from '@/utils/global.js'
 import VueCompositionApi from '@vue/composition-api'; 
 Vue.use(VueCompositionApi);
 
@@ -14,6 +14,7 @@ import './styles/main.scss'
 
 Vue.config.productionTip = false
 
+Vue.use(global)
 Vue.use(ElementUI);
 new Vue({
   router,
