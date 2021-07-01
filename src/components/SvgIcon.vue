@@ -37,6 +37,6 @@ export default {
     height: 1em;
     // 添加fill后可修改color
     fill: currentColor;
-    color: white;
+    // color: white;
   }
 </style>
