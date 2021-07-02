@@ -11,10 +11,10 @@
               style="width: 100%"
             >
               <el-option
-                v-for="item in options"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                v-for="item in options.category"
+                :key="item.id"
+                :label="item.category_name"
+                :value="item.category_name"
               >
               </el-option>
             </el-select>
@@ -132,8 +132,9 @@
 </template>
 
 <script>
-import { global3 } from '@/utils/global3.0.js'
-import { reactive, ref } from "@vue/composition-api";
+import { common } from "@/api/common.js";
+import { global3 } from "@/utils/global3.0.js";
+import { onMounted, reactive, ref, watch } from "@vue/composition-api";
 import DialogInfo from "../../components/DialogInfo.vue";
 export default {
   name: "infoIndex",
@@ -141,6 +142,9 @@ export default {
     DialogInfo,
   },
   setup(props, { root }) {
+    const { confirm } = global3();
+    const { getInfoCategory, categoryItem } = common();
+
     const category_value = ref("");
     const data_value = ref("");
     const search_key = ref("1");
@@ -157,20 +161,9 @@ export default {
         label: "标题",
       },
     ]);
-    const options = reactive([
-      {
-        value: "1",
-        label: "国际信息",
-      },
-      {
-        value: "2",
-        label: "国内信息",
-      },
-      {
-        value: "3",
-        label: "行内信息",
-      },
-    ]);
+    const options = reactive({
+      category: [],
+    });
     const tableData = reactive([
       {
         title: "太阳4-2快船进总决赛 保罗41+8刷爆纪录乔治21+9",
@@ -198,8 +191,6 @@ export default {
       },
     ]);
 
-    const { confirm } = global3()
-
     const handleSizeChange = (val) => {
       page.pageSize = val;
     };
@@ -211,19 +202,29 @@ export default {
       root.confirm({
         content: "是否确认删除?",
         fn: "confirmDelete",
-        id: 222
-      })
+        id: 222,
+      });
     };
     const deleteAll = () => {
       confirm({
         content: "删除全部, 是否继续?",
         fn: confirmDelete,
-        id: 111
-      })
+        id: 111,
+      });
     };
-    const confirmDelete = (value) => {
-      
-    }
+    const confirmDelete = (value) => {};
+
+    onMounted(() => {
+      getInfoCategory();
+      // root.$store.dispatch('VuexGetInfoCategory').then(res => {})
+    });
+
+    watch(
+      () => categoryItem.item,
+      (value) => {
+        options.category = value;
+      }
+    );
     return {
       options,
       category_value,
@@ -236,7 +237,7 @@ export default {
       handleCurrentChange,
       dialog_info,
       deleteItem,
-      deleteAll
+      deleteAll,
     };
   },
 };

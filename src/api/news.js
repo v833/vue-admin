@@ -21,7 +21,7 @@ export function editCategory (data) {
 export function deleteCategory (data) {
   return service.request({
     method: 'post',
-    url: '/news/getCategory/',
+    url: '/news/deleteCategory/',
     data
   })
 }

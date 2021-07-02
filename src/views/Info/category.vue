@@ -96,20 +96,22 @@
 </template>
 
 <script>
+import {common} from '@/api/common.js'
 import { global3 } from "@/utils/global3.0.js";
 import {
   addFirstCategory,
-  getCategory,
   deleteCategory,
   editCategory as EditCategory,
 } from "@/api/news";
-import { onMounted, reactive, ref } from "@vue/composition-api";
+import { onMounted, reactive, ref, watch } from "@vue/composition-api";
 import SvgIcon from "../../components/SvgIcon.vue";
 export default {
   components: { SvgIcon },
   name: "category",
   setup(props, { root }) {
     const { confirm } = global3();
+    const { getInfoCategory, categoryItem } = common();
+
 
     const form = reactive({
       categoryName: "",
@@ -214,14 +216,6 @@ export default {
       category_first_disabled.value = false;
       submit_button_disabled.value = false;
     };
-    const initCategory = () => {
-      getCategory()
-        .then((res) => {
-          let data = res.data.data;
-          category.item = data;
-        })
-        .catch((err) => root.$message.error(err));
-    };
     const deleteCategoryComfirm = (id) => {
       deleteId.value = id;
       confirm({
@@ -254,8 +248,12 @@ export default {
       category.current = params.data;
     };
     onMounted(() => {
-      initCategory();
+      getInfoCategory()
     });
+
+    watch(() => categoryItem.item, (value) => {
+      category.item = value
+    })
     return {
       form,
       submit,
