@@ -11,13 +11,14 @@ export function global3() {
         type: data.type || "warning",
         center: true
       }).then(() => {
-        data.fn && data.fn(data.id)
+        data.fn && data.fn(data.id || '')
         Vue.prototype.$message({
           type: "success",
           message: "删除成功!",
         });
       })
       .catch(() => {
+        data.catchFn && data.catchFn()
         Vue.prototype.$message({
           type: "info",
           message: "已取消删除",

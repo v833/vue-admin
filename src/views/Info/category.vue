@@ -1,46 +1,57 @@
 <template>
   <div id="category">
-    <el-button type="danger">添加一级分类</el-button>
+    <el-button type="danger" @click="addFirst({ type: 'category_first_add' })"
+      >添加一级分类</el-button
+    >
     <div>
       <hr class="hr-e9e9e9" />
       <el-row :gutter="30">
         <el-col :span="8">
           <div class="category-wrap">
-            <div class="category">
+            <div
+              class="category"
+              v-for="firstItem in category.item"
+              :key="firstItem.id"
+            >
               <h4>
                 <svg-icon icon-class="plus"></svg-icon>
-                新闻
+                {{ firstItem.category_name }}
                 <div class="button-group">
-                  <el-button size="mini" type="danger" round>编辑</el-button>
+                  <el-button
+                    size="mini"
+                    type="danger"
+                    round
+                    @click="
+                      editCategory({
+                        data: firstItem,
+                        type: 'category_first_edit',
+                      })
+                    "
+                    >编辑</el-button
+                  >
                   <el-button size="mini" type="success" round
                     >添加子集</el-button
                   >
-                  <el-button size="mini" type="" round>删除</el-button>
+                  <el-button
+                    size="mini"
+                    type=""
+                    round
+                    @click="deleteCategoryComfirm(firstItem.id)"
+                    >删除</el-button
+                  >
                 </div>
               </h4>
-              <ul>
-                <li>
-                  国内
+              <ul v-if="firstItem.children">
+                <li
+                  v-for="childrenItem in firstItem.children"
+                  :key="childrenItem.id"
+                >
+                  {{ childrenItem.category_name }}
                   <div class="button-group">
                     <el-button size="mini" type="danger" round>编辑</el-button>
                     <el-button size="mini" type="" round>删除</el-button>
                   </div>
                 </li>
-                <li>国内</li>
-                <li>国内</li>
-                <li>国内</li>
-              </ul>
-            </div>
-            <div class="category">
-              <h4>
-                <svg-icon icon-class="plus"></svg-icon>
-                新闻
-              </h4>
-              <ul>
-                <li>国内</li>
-                <li>国内</li>
-                <li>国内</li>
-                <li>国内</li>
               </ul>
             </div>
           </div>
@@ -72,7 +83,7 @@
               <el-button
                 type="danger"
                 @click="submit"
-                :loading="submit_button_loading"
+                :loading="submit_button_disabled"
                 :disabled="submit_button_disabled"
                 >确定</el-button
               >
@@ -85,22 +96,181 @@
 </template>
 
 <script>
-import { reactive } from '@vue/composition-api';
+import { global3 } from "@/utils/global3.0.js";
+import {
+  addFirstCategory,
+  getCategory,
+  deleteCategory,
+  editCategory as EditCategory,
+} from "@/api/news";
+import { onMounted, reactive, ref } from "@vue/composition-api";
 import SvgIcon from "../../components/SvgIcon.vue";
 export default {
   components: { SvgIcon },
   name: "category",
   setup(props, { root }) {
-    const categoryFrom = reactive({
-      name: '',
-      region: '',
-      type: ''
-    })
+    const { confirm } = global3();
 
+    const form = reactive({
+      categoryName: "",
+      secCategoryName: "",
+    });
+    const category_first_input = ref(true);
+    const category_children_input = ref(true);
+    const submit_button_loading = ref(false);
+    const submit_button_disabled = ref(true);
+    const category_children_disabled = ref(true);
+    const category_first_disabled = ref(true);
+    const deleteId = ref("");
+    const subit_button_type = ref("");
 
+    const category = reactive({
+      item: [],
+      current: [],
+    });
+
+    const submit = () => {
+      if (subit_button_type.value === "category_first_add") {
+        pushFirstCategory();
+      }
+      if (subit_button_type.value == "category_first_edit") {
+        changeFirstCategory();
+      }
+      if (subit_button_type.value == "category_children_add") {
+        addChildrenCategory();
+      }
+    };
+    const pushFirstCategory = () => {
+      if (!form.categoryName) {
+        root.$message.error("分类名称不能为空");
+        return;
+      }
+      submit_button_loading.value = true;
+      addFirstCategory({ categoryName: form.categoryName })
+        .then((res) => {
+          root.$message.success(res.message);
+          category.item.push(res.data);
+        })
+        .catch((err) => {})
+        .finally(() => {
+          submit_button_loading.value = false;
+          form.categoryName = "";
+          form.secCategoryName = "";
+        });
+    };
+    const changeFirstCategory = () => {
+      if (category.current.length == 0) {
+        root.$message({
+          message: "未选择分类！！",
+          type: "error",
+        });
+        return false;
+      }
+      let requestData = {
+        id: category.current.id,
+        categoryName: form.categoryName,
+      };
+      EditCategory(requestData).then((response) => {
+        let responseData = response;
+        root.$message({
+          message: responseData.message,
+          type: "success",
+        });
+        category.current.category_name = responseData.data.data.categoryName;
+        // getInfoCategoryAll();
+        // 清空输入框
+        form.categoryName = "";
+        category.current = [];
+      });
+    };
+    const addChildrenCategory = () => {
+      if (!form.secCategoryName) {
+        root.$message({
+          message: "子级分类名称不能为空！！",
+          type: "error",
+        });
+        return false;
+      }
+      let requestData = {
+        categoryName: form.secCategoryName,
+        parentId: category.current.id,
+      };
+      AddChildrenCategory(requestData).then((response) => {
+        let responseData = response.data;
+        root.$message({
+          message: responseData.message,
+          type: "success",
+        });
+        // 调用分类列表接口
+        getInfoCategoryAll();
+        // 清空子级输入框内容
+        form.secCategoryName = "";
+      });
+    };
+    const addFirst = (params) => {
+      subit_button_type.value = params.type;
+      category_first_input.value = true;
+      category_children_input.value = false;
+      category_first_disabled.value = false;
+      submit_button_disabled.value = false;
+    };
+    const initCategory = () => {
+      getCategory()
+        .then((res) => {
+          let data = res.data.data;
+          category.item = data;
+        })
+        .catch((err) => root.$message.error(err));
+    };
+    const deleteCategoryComfirm = (id) => {
+      deleteId.value = id;
+      confirm({
+        content: "确认删除当前信息，确认后将无法恢复！！",
+        tip: "警告",
+        fn: delCategory,
+        catchFn: () => {
+          deleteId.value = "";
+        },
+      });
+    };
+    const delCategory = () => {
+      deleteCategory({ categoryId: deleteId.value })
+        .then(() => {
+          let newData = category.item.filter(
+            (item) => item.id !== deleteId.value
+          );
+          category.item = newData;
+        })
+        .catch((err) => {});
+    };
+    const editCategory = (params) => {
+      subit_button_type.value = params.type;
+      category_children_input.value = false;
+      category_first_disabled.value = false;
+      submit_button_disabled.value = false;
+      // 一级名称输入还原名称
+      form.categoryName = params.data.category_name;
+      // 储存当前数据对象
+      category.current = params.data;
+    };
+    onMounted(() => {
+      initCategory();
+    });
     return {
-      categoryFrom
-    }
+      form,
+      submit,
+      category_first_input,
+      category_children_input,
+      category_first_disabled,
+      category_children_disabled,
+      submit_button_loading,
+      submit_button_disabled,
+      addFirst,
+      category,
+      deleteCategoryComfirm,
+      editCategory,
+      subit_button_type,
+    };
   },
 };
 </script>

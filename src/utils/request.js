@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
+import cookie from 'cookie_js'
 
 // 创建axios, 赋给变量
 const BASEURL = process.env.NODE_ENV === 'production' ? '' : '/api'
@@ -11,8 +12,8 @@ const service = axios.create({
 service.interceptors.request.use(function (config) {
   // 在发送请求之前做些什么
   // 请求头 后台需要前端传相关的参数
-  config.headers.Tokey = 'aaa';
-  config.headers.userId = 'bbb';
+  config.headers["Tokey"] = cookie.get('admin_token')
+  config.headers["UserName"] = cookie.get('username');
 
   return config
 }, function (error) {
