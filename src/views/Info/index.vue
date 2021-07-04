@@ -14,7 +14,7 @@
                 v-for="item in options.category"
                 :key="item.id"
                 :label="item.category_name"
-                :value="item.category_name"
+                :value="item.id"
               >
               </el-option>
             </el-select>
@@ -27,12 +27,14 @@
           <div class="wrap-content">
             <el-date-picker
               style="width: 100%"
-              v-model="data_value"
+              v-model="date_value.item"
               type="datetimerange"
               align="right"
+              format="yyyy年MM月dd日"
+              value-format="yyyy-MM-dd HH:mm:ss"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              :default-time="['12:00:00', '08:00:00']"
+              :default-time="['00:00:00', '23:59:59']"
             >
             </el-date-picker>
           </div>
@@ -62,7 +64,9 @@
         ></el-input>
       </el-col>
       <el-col :span="2">
-        <el-button type="danger" style="width: 100%">搜索</el-button>
+        <el-button type="danger" style="width: 100%" @click="search"
+          >搜索</el-button
+        >
       </el-col>
       <el-col :span="2">&nbsp;</el-col>
       <el-col :span="2">
@@ -78,12 +82,29 @@
 
     <!-- 表格 -->
     <div class="black-space-30"></div>
-    <el-table :data="tableData" border style="width: 100%">
+    <el-table
+      :data="table_data.item"
+      border
+      v-loading="loadingData"
+      style="width: 100%"
+      @selection-change="handleSelectionChange"
+    >
       <el-table-column type="selection" width="45"></el-table-column>
       <el-table-column prop="title" label="标题"> </el-table-column>
-      <el-table-column prop="catagory" label="类别" width="130">
+      <el-table-column
+        prop="categoryId"
+        label="类别"
+        width="130"
+        :formatter="toCategory"
+      >
       </el-table-column>
-      <el-table-column prop="data" label="日期" width="237"> </el-table-column>
+      <el-table-column
+        prop="createDate"
+        label="日期"
+        width="237"
+        :formatter="toData"
+      >
+      </el-table-column>
       <el-table-column prop="user" label="管理员" width="115">
       </el-table-column>
       <el-table-column label="操作" width="180">
@@ -112,7 +133,7 @@
           @current-change="handleCurrentChange"
           :page-sizes="[5, 10, 15, 20]"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="4"
+          :total="total"
         >
         </el-pagination>
       </el-col>
@@ -126,70 +147,73 @@
     <dialog-info
       title="新增"
       :flag="dialog_info"
+      :category="options.category"
       @closed="dialog_info = false"
+      @getListEmit="pullList"
     ></dialog-info>
+    <dialog-info-edit
+      title="编辑"
+      :flag.sync="dialog_info_edit"
+      :category="options.category"
+      @closed="dialog_info = false"
+      @getListEmit="pullList"
+      :id="infoId"
+    ></dialog-info-edit>
   </div>
 </template>
 
 <script>
+import { timestampToTime } from "@/utils/common.js";
+import { getList, deleteInfo } from "@/api/news";
 import { common } from "@/api/common.js";
 import { global3 } from "@/utils/global3.0.js";
 import { onMounted, reactive, ref, watch } from "@vue/composition-api";
 import DialogInfo from "../../components/DialogInfo.vue";
+import DialogInfoEdit from "../../components/DialogInfoEdit.vue";
 export default {
   name: "infoIndex",
   components: {
     DialogInfo,
+    DialogInfoEdit
   },
   setup(props, { root }) {
     const { confirm } = global3();
     const { getInfoCategory, categoryItem } = common();
 
     const category_value = ref("");
-    const data_value = ref("");
-    const search_key = ref("1");
+    const data_value = ref([]);
+    const search_key = ref("id");
     const search_keyWork = ref("");
     const dialog_info = ref(false);
+    const dialog_info_edit = ref(false)
+    const total = ref(0);
+    const loadingData = ref(false);
+    const deleteInfoId = ref("");
+    const date_value = reactive({
+      item: []
+    });
+    const infoId = ref('')
 
     const searchOptions = reactive([
       {
-        value: "1",
+        value: "id",
         label: "ID",
       },
       {
-        value: "2",
+        value: "title",
         label: "标题",
       },
     ]);
     const options = reactive({
       category: [],
     });
-    const tableData = reactive([
-      {
-        title: "太阳4-2快船进总决赛 保罗41+8刷爆纪录乔治21+9",
-        catagory: "国外信息",
-        data: "2021-7-1 13:14:32",
-        user: "管理员",
-      },
-      {
-        title: "太阳重返总决赛 艰难重建他们到底做对了什么？",
-        catagory: "国外信息",
-        data: "2021-7-1 13:14:32",
-        user: "管理员",
-      },
-      {
-        title: "保罗打破魔咒踏上总决赛 命运终于向控卫之神微笑",
-        catagory: "国外信息",
-        data: "2021-7-1 13:14:32",
-        user: "管理员",
-      },
-      {
-        title: "太阳顶级3D成超级福将 连续两年杀入总决赛",
-        catagory: "国外信息",
-        data: "2021-7-1 13:14:32",
-        user: "管理员",
-      },
-    ]);
+    const table_data = reactive({
+      item: [],
+    });
+    const page = reactive({
+      pageNumber: 1,
+      pageSize: 10,
+    });
 
     const handleSizeChange = (val) => {
       page.pageSize = val;
@@ -199,24 +223,95 @@ export default {
       getList();
     };
     const deleteItem = (id) => {
+      deleteInfoId.value = [id];
       root.confirm({
         content: "是否确认删除?",
-        fn: "confirmDelete",
-        id: 222,
+        fn: confirmDelete,
       });
     };
     const deleteAll = () => {
+      if (!deleteInfoId.value || deleteInfoId.value.length === 0) {
+        root.$message.error("请选择要删除的数据！");
+        return;
+      }
       confirm({
         content: "删除全部, 是否继续?",
         fn: confirmDelete,
-        id: 111,
       });
     };
-    const confirmDelete = (value) => {};
+    const handleSelectionChange = (value) => {
+      let ids = value.map((item) => item.id);
+      deleteInfoId.value = ids;
+    };
+    const confirmDelete = (value) => {
+      deleteInfo({ id: deleteInfoId.value })
+        .then((res) => {
+          deleteInfoId.value = "";
+          pullList();
+        })
+        .catch((err) => {});
+    };
+    const pullList = () => {
+      let requestData = formatData();
+      loadingData.value = true;
+      getList(requestData)
+        .then((res) => {
+          let data = res.data;
+          table_data.item = data.data
+          total.value = data.total
+        })
+        .catch((err) => {})
+        .finally(() => {
+          loadingData.value = false;
+        });
+    };
+    const toData = (row, column, cellValue, index) => {
+      return timestampToTime(row.createDate);
+    };
+    const toCategory = (row) => {
+      let categoryId = row.categoryId;
+      let categoryData = options.category.filter(
+        (item) => item.id === categoryId
+      )[0];
+      if(!categoryData) { return false; }
+      return categoryData.category_name;
+    };
+    const search = () => {
+      let data = formatData();
+      pullList(data);
+    };
+    const formatData = () => {
+      let requestData = {
+        pageNumber: page.pageNumber,
+        pageSize: page.pageSize,
+      };
+      // 分类ID
+      if (category_value.value) {
+        requestData.categoryId = category_value.value;
+      }
+      // 日期
+      if (date_value.item.length > 0) {
+        requestData.startTime = date_value.item[0];
+        requestData.endTime = date_value.item[1];
+      }
+      // 关键字
+      if (search_keyWork.value) {
+        requestData[search_key.value] = search_keyWork.value;
+      }
+      return requestData;
+    };
+    const editInfo = (id) => {
+      dialog_info_edit.value = true
+      infoId.value = id
+
+    };
 
     onMounted(() => {
+      // 获取分类
       getInfoCategory();
       // root.$store.dispatch('VuexGetInfoCategory').then(res => {})
+      // 获取列表
+      pullList();
     });
 
     watch(
@@ -232,12 +327,24 @@ export default {
       search_key,
       searchOptions,
       search_keyWork,
-      tableData,
+      table_data,
       handleSizeChange,
       handleCurrentChange,
       dialog_info,
+      dialog_info_edit,
       deleteItem,
       deleteAll,
+      total,
+      loadingData,
+      toData,
+      toCategory,
+      handleSelectionChange,
+      search,
+      date_value,
+      editInfo,
+      infoId,
+      pullList
+      
     };
   },
 };

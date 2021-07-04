@@ -29,7 +29,16 @@
                     "
                     >编辑</el-button
                   >
-                  <el-button size="mini" type="success" round
+                  <el-button
+                    size="mini"
+                    type="success"
+                    round
+                    @click="
+                      handleAddChildren({
+                        data: firstItem,
+                        type: 'category_children_add',
+                      })
+                    "
                     >添加子集</el-button
                   >
                   <el-button
@@ -48,8 +57,21 @@
                 >
                   {{ childrenItem.category_name }}
                   <div class="button-group">
-                    <el-button size="mini" type="danger" round>编辑</el-button>
-                    <el-button size="mini" type="" round>删除</el-button>
+                    <el-button
+                      size="mini"
+                      type="danger"
+                      round
+                      @click="
+                        editChildrenCategory({
+                          from: firstItem,
+                          data: childrenItem,
+                          type: 'category_children_edit',
+                        })
+                      "
+                      >编辑</el-button
+                    >
+                    <el-button size="mini" type="" round 
+                    @click="deleteCategoryComfirm(childrenItem.id)">删除</el-button>
                   </div>
                 </li>
               </ul>
@@ -96,12 +118,13 @@
 </template>
 
 <script>
-import {common} from '@/api/common.js'
+import { common } from "@/api/common.js";
 import { global3 } from "@/utils/global3.0.js";
 import {
   addFirstCategory,
   deleteCategory,
   editCategory as EditCategory,
+  addChildrenCategory,
 } from "@/api/news";
 import { onMounted, reactive, ref, watch } from "@vue/composition-api";
 import SvgIcon from "../../components/SvgIcon.vue";
@@ -110,8 +133,7 @@ export default {
   name: "category",
   setup(props, { root }) {
     const { confirm } = global3();
-    const { getInfoCategory, categoryItem } = common();
-
+    const { getInfoCategory, categoryItem, getInfoCategoryAll } = common();
 
     const form = reactive({
       categoryName: "",
@@ -139,7 +161,10 @@ export default {
         changeFirstCategory();
       }
       if (subit_button_type.value == "category_children_add") {
-        addChildrenCategory();
+        pullChildrenCategory();
+      }
+      if (subit_button_type.value == "category_children_edit") {
+        changeChildrenCategory();
       }
     };
     const pushFirstCategory = () => {
@@ -179,13 +204,55 @@ export default {
           type: "success",
         });
         category.current.category_name = responseData.data.data.categoryName;
-        // getInfoCategoryAll();
+        getInfoCategoryAll();
         // 清空输入框
         form.categoryName = "";
         category.current = [];
       });
     };
-    const addChildrenCategory = () => {
+    const changeChildrenCategory = () => {
+      if (!form.secCategoryName) {
+        root.$message({
+          message: "子级分类名称不能为空！！",
+          type: "error",
+        });
+        return false;
+      }
+      console.log(category.current);
+      let requestData = {
+        categoryName: form.secCategoryName,
+        // 这里有bug, 需要按需删除 (已解决 7-4)
+        id: category.current.id,
+      };
+      EditCategory(requestData).then((response) => {
+        let responseData = response;
+        root.$message({
+          message: responseData.message,
+          type: "success",
+        });
+        // 调用分类列表接口
+        getInfoCategoryAll();
+        // 清空子级输入框内容
+        form.secCategoryName = "";
+      });
+    };
+    const handleAddChildren = (params) => {
+      // 更新确定按钮类型
+      subit_button_type.value = params.type;
+      // 存储数据
+      category.current = params.data;
+      // 禁用一级输入框
+      category_first_disabled.value = true;
+      // 启用确定按钮
+      submit_button_disabled.value = false;
+      // 启用子级输入框
+      category_children_disabled.value = false;
+      // 显示子级输入框
+      category_children_input.value = true;
+      // 显示一级分类文本
+      form.categoryName = params.data.category_name;
+    };
+    const pullChildrenCategory = () => {
       if (!form.secCategoryName) {
         root.$message({
           message: "子级分类名称不能为空！！",
@@ -197,8 +264,8 @@ export default {
         categoryName: form.secCategoryName,
         parentId: category.current.id,
       };
-      AddChildrenCategory(requestData).then((response) => {
-        let responseData = response.data;
+      addChildrenCategory(requestData).then((response) => {
+        let responseData = response;
         root.$message({
           message: responseData.message,
           type: "success",
@@ -226,14 +293,15 @@ export default {
           deleteId.value = "";
         },
       });
-    };
+    }; // 
     const delCategory = () => {
       deleteCategory({ categoryId: deleteId.value })
         .then(() => {
-          let newData = category.item.filter(
-            (item) => item.id !== deleteId.value
-          );
-          category.item = newData;
+          // let newData = category.item.filter(
+          //   (item) => item.id !== deleteId.value
+          // );
+          // category.item = newData;
+          getInfoCategoryAll();
         })
         .catch((err) => {});
     };
@@ -247,13 +315,35 @@ export default {
       // 储存当前数据对象
       category.current = params.data;
     };
+    const editChildrenCategory = (params) => {
+      // 更新确定按钮类型
+      console.log(params);
+      subit_button_type.value = params.type;
+      // 存储数据
+      category.current = params.data;
+      // 禁用一级输入框
+      category_first_disabled.value = true;
+      // 启用确定按钮
+      submit_button_disabled.value = false;
+      // 启用子级输入框
+      category_children_disabled.value = false;
+      // 显示子级输入框
+      category_children_input.value = true;
+      // 显示一级分类文本
+      form.categoryName = params.from.category_name;
+
+
+    }
     onMounted(() => {
-      getInfoCategory()
+      getInfoCategoryAll();
     });
 
-    watch(() => categoryItem.item, (value) => {
-      category.item = value
-    })
+    watch(
+      () => categoryItem.item,
+      (value) => {
+        category.item = value;
+      }
+    );
     return {
       form,
       submit,
@@ -268,12 +358,14 @@ export default {
       deleteCategoryComfirm,
       editCategory,
       subit_button_type,
+      handleAddChildren,
+      editChildrenCategory
     };
   },
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .category-wrap {
   div:first-child {
     &:before {

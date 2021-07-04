@@ -1,4 +1,4 @@
-import { getCategory } from "@/api/news";
+import { getCategory, getCategoryAll } from "@/api/news";
 import { reactive } from "@vue/composition-api";
 export function common() {
   const categoryItem = reactive({
@@ -17,20 +17,18 @@ export function common() {
       });
   };
 
-  /**
-   * 获取全部分类
-   */
-  // const getInfoCategoryAll = () => {
-  //   GetCategoryAll({})
-  //     .then(response => {
-  //       categoryItem.item = response.data.data;
-  //     })
-  //     .catch(error => {});
-  // };
+   // 获取全部分类
+  const getInfoCategoryAll = () => {
+    getCategoryAll({})
+      .then(response => {
+        categoryItem.item = response.data;
+      })
+      .catch(error => {});
+  };
 
   return {
     getInfoCategory,
-    // getInfoCategoryAll,
+    getInfoCategoryAll,
     categoryItem
   };
 }
