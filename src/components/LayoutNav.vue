@@ -24,13 +24,15 @@
           </template>
           <!-- 子级菜单 -->
           <el-menu-item-group>
-            <el-menu-item
-              v-for="(subItem, index) in item.children"
-              :index="subItem.path"
-              :key="index"
-            >
-              {{ subItem.meta.name }}
-            </el-menu-item>
+            <template v-for="(subItem, index) in item.children">
+              <el-menu-item
+                v-if="!subItem.hidden"
+                :index="subItem.path"
+                :key="index"
+              >
+                {{ subItem.meta.name }}
+              </el-menu-item>
+            </template>
           </el-menu-item-group>
         </el-submenu>
       </template>

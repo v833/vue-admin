@@ -94,20 +94,20 @@
       <el-table-column
         prop="categoryId"
         label="类别"
-        width="130"
+        width="100"
         :formatter="toCategory"
       >
       </el-table-column>
       <el-table-column
         prop="createDate"
         label="日期"
-        width="237"
+        width="200"
         :formatter="toData"
       >
       </el-table-column>
       <el-table-column prop="user" label="管理员" width="115">
       </el-table-column>
-      <el-table-column label="操作" width="180">
+      <el-table-column label="操作" width="300">
         <template slot-scope="scope">
           <el-button type="danger" size="mini" @click="deleteItem(scope.row.id)"
             >删除</el-button
@@ -115,6 +115,10 @@
           <el-button type="success" size="mini" @click="editInfo(scope.row.id)"
             >编辑</el-button
           >
+          <router-link :to="{ name: 'InfoDetailed', query: { id: scope.row.id }}">
+            <el-button type="success" size="mini" class="margin-left-10">编辑详情</el-button>
+          </router-link>
+          
         </template>
       </el-table-column>
     </el-table>
@@ -174,7 +178,7 @@ export default {
   name: "infoIndex",
   components: {
     DialogInfo,
-    DialogInfoEdit
+    DialogInfoEdit,
   },
   setup(props, { root }) {
     const { confirm } = global3();
@@ -185,14 +189,14 @@ export default {
     const search_key = ref("id");
     const search_keyWork = ref("");
     const dialog_info = ref(false);
-    const dialog_info_edit = ref(false)
+    const dialog_info_edit = ref(false);
     const total = ref(0);
     const loadingData = ref(false);
     const deleteInfoId = ref("");
     const date_value = reactive({
-      item: []
+      item: [],
     });
-    const infoId = ref('')
+    const infoId = ref("");
 
     const searchOptions = reactive([
       {
@@ -257,8 +261,8 @@ export default {
       getList(requestData)
         .then((res) => {
           let data = res.data;
-          table_data.item = data.data
-          total.value = data.total
+          table_data.item = data.data;
+          total.value = data.total;
         })
         .catch((err) => {})
         .finally(() => {
@@ -273,7 +277,9 @@ export default {
       let categoryData = options.category.filter(
         (item) => item.id === categoryId
       )[0];
-      if(!categoryData) { return false; }
+      if (!categoryData) {
+        return false;
+      }
       return categoryData.category_name;
     };
     const search = () => {
@@ -301,9 +307,8 @@ export default {
       return requestData;
     };
     const editInfo = (id) => {
-      dialog_info_edit.value = true
-      infoId.value = id
-
+      dialog_info_edit.value = true;
+      infoId.value = id;
     };
 
     onMounted(() => {
@@ -343,8 +348,7 @@ export default {
       date_value,
       editInfo,
       infoId,
-      pullList
-      
+      pullList,
     };
   },
 };

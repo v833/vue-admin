@@ -1,3 +1,7 @@
 @import "./config.scss";
 @import "./normalize";
-@import "./elementui.scss"
+@import "./elementui.scss";
+
+@for $i from 1 through 110 {
+  .margin-left-#{$i} { margin-left:(1px * $i); }
+}
