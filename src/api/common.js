@@ -42,3 +42,27 @@ export function qiniuToKen (data) {
     data
   })
 }
+
+export function loadTableData (params) {
+  return service.request({
+    method: params.method || 'post',
+    url: params.url,
+    data: params.data || {}
+  })
+}
+// 添加用户
+export function addUser (data) {
+  return service.request({
+    method: 'post',
+    url: '/user/add/',
+    data,
+  })
+}
+// 添加地区
+export function GetCityPicker(data){
+  return service.request({
+      method: "post",
+      url: "/cityPicker/",
+      data
+  })
+}

@@ -221,10 +221,11 @@ export default {
 
     const handleSizeChange = (val) => {
       page.pageSize = val;
+      pullList()
     };
     const handleCurrentChange = (val) => {
       page.pageNumber = val;
-      getList();
+      pullList()
     };
     const deleteItem = (id) => {
       deleteInfoId.value = [id];
