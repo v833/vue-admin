@@ -4,6 +4,7 @@ import Vuex from 'vuex'
 import { postLogin } from '@/api/login.js'
 import { setToken, setUsername, getUsername, removeToken, removeUsername } from '../utils/app'
 import { getCategory } from '../api/news'
+import permission from './permission'
 
 Vue.use(Vuex)
 
@@ -12,9 +13,10 @@ export default new Vuex.Store({
     isCollapse: JSON.parse(sessionStorage.getItem('isCollapse')) || false,
     token: '',
     username: getUsername() || '',
+
   },
   getters: {
-
+    
   },
   mutations: {
     SET_COLLAPSE(state) {
@@ -69,5 +71,6 @@ export default new Vuex.Store({
 
   },
   modules: {
+    permission
   }
 })

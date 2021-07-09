@@ -6,7 +6,7 @@
       <el-radio-button :label="true">收起</el-radio-button>
     </el-radio-group> -->
     <el-menu
-      default-active="1-4-1"
+      :default-active="defalutActive"
       class="el-menu-vertical-demo"
       :collapse="isCollapse"
       background-color="transparent"
@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { reactive, ref, computed } from "@vue/composition-api";
+import { reactive, ref, computed, watch } from "@vue/composition-api";
 import SvgIcon from "./SvgIcon.vue";
 export default {
   components: { SvgIcon },
@@ -50,12 +50,19 @@ export default {
     // 数据
     const routers = reactive(root.$router.options.routes);
     const isCollapse = computed(() => root.$store.state.isCollapse);
-
     // 函数
-
+    const defalutActive = computed(() => {
+      const route = root.$route;
+      const { path } = route;
+      return path;
+    });
+    watch(() => root.$router.options.routes, (val) => {
+      routers = val
+    })
     return {
       isCollapse,
       routers,
+      defalutActive
     };
   },
 };

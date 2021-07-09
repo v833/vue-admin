@@ -109,16 +109,30 @@
       </el-table-column>
       <el-table-column label="操作" width="300">
         <template slot-scope="scope">
-          <el-button type="danger" size="mini" @click="deleteItem(scope.row.id)"
+          <el-button
+            type="danger"
+            size="mini"
+            @click="deleteItem(scope.row.id)"
+            v-if="btnPerm('info.delete')"
             >删除</el-button
           >
-          <el-button type="success" size="mini" @click="editInfo(scope.row.id)"
+          <el-button
+            type="success"
+            size="mini"
+            @click="editInfo(scope.row.id)"
+            v-if="btnPerm('info.edit')"
             >编辑</el-button
           >
-          <router-link :to="{ name: 'InfoDetailed', query: { id: scope.row.id }}">
-            <el-button type="success" size="mini" class="margin-left-10">编辑详情</el-button>
+          <router-link
+            :to="{ name: 'InfoDetailed', query: { id: scope.row.id } }"
+          >
+            <el-button
+              type="success"
+              size="mini"
+              class="margin-left-10"
+              >编辑详情</el-button
+            >
           </router-link>
-          
         </template>
       </el-table-column>
     </el-table>
@@ -221,11 +235,11 @@ export default {
 
     const handleSizeChange = (val) => {
       page.pageSize = val;
-      pullList()
+      pullList();
     };
     const handleCurrentChange = (val) => {
       page.pageNumber = val;
-      pullList()
+      pullList();
     };
     const deleteItem = (id) => {
       deleteInfoId.value = [id];

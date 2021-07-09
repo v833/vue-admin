@@ -8,7 +8,13 @@ export function getSms (data) {
   })
 }
 // 获取用户角色接口
-
+export function getUserRole (data = {}) {
+  return service.request({
+    method: 'post',
+    url: '/userRole/',
+    data
+  })
+}
 // 登录
 export function postLogin (data) {
   return service.request({
